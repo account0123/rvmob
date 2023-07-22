@@ -13,6 +13,7 @@ import {ErrorBoundary} from 'react-error-boundary';
 import SideMenu from '@chakrahq/react-native-side-menu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import BackgroundFetch from 'react-native-background-fetch';
 // import ConfirmHcaptcha from '@hcaptcha/react-native-hcaptcha';
 import {currentTheme, styles} from './src/Theme';
 import {client, app, selectedRemark, randomizeRemark} from './src/Generic';
@@ -83,6 +84,19 @@ class MainView extends React.Component {
     ) {
       randomizeRemark();
     }
+  }
+  async initBackgroundTask(){
+    const onEvent = async (taskId) => {
+      console.log('[WORKER] task: ', taskId);
+      console.log('[WORKER] Fetching unreads')
+      BackgroundFetch.finish(taskId);
+    }
+    const onTimeout = async (taskId) => {
+      console.warn('[BackgroundFetch] TIMEOUT task: ', taskId);
+      BackgroundFetch.finish(taskId);
+    }
+    const status = await BackgroundFetch.configure({minimumFetchInterval: 15, stopOnTerminate: false, requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY, enableHeadless: true}, onEvent, onTimeout);
+    console.log('[BackgroundFetch] configure status: ', status);
   }
   async componentDidMount() {
     console.log(`[APP] Mounted component (${new Date().getTime()})`);
@@ -243,6 +257,8 @@ class MainView extends React.Component {
         }
         try {
           await client.useExistingSession({token: res});
+          await this.initBackgroundTask();
+          //BackgroundFetch.scheduleTask({taskId: 'ws.check', delay: 20000,periodic: true});
         } catch (e: any) {
           console.log(e);
           !(

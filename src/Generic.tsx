@@ -353,6 +353,7 @@ getAPIURL().then(url => {
   const apiURL = url;
   console.log(`[AUTH] Creating client... (instance: ${apiURL})`);
   client = new Client({
+    autoReconnect: true,
     unreads: true,
     apiURL: apiURL,
   });
