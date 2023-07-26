@@ -1,6 +1,8 @@
 import React from 'react';
 import {View} from 'react-native';
 import {observer} from 'mobx-react-lite';
+import LinearGradient from 'react-native-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 
 import {Server, User} from 'revolt.js';
 
@@ -37,6 +39,7 @@ export const Username = observer(
       server && memberObject?.nickname
         ? memberObject?.nickname
         : user?.username;
+    const displayName = masquerade ?? name;
     if (server && memberObject?.roles && memberObject?.roles?.length > 0) {
       let srv = client.servers.get(memberObject._id.server);
       if (srv?.roles) {
@@ -45,7 +48,10 @@ export const Username = observer(
         );
       }
     }
-    let badgeSize = (size || 14) * 0.6;
+    size = size || 14;
+    typeof roleColor == 'object' &&
+      console.log('[USERNAME] roleColor=' + JSON.stringify(roleColor));
+    let badgeSize = size * 0.6;
     let bridgedMessage =
       user?._id === USER_IDS.automod && masquerade !== undefined;
     let badgeStyle = {
@@ -61,11 +67,30 @@ export const Username = observer(
     };
     return (
       <View style={{flexDirection: 'row'}}>
-        <Text
-          colour={roleColor}
-          style={{fontWeight: 'bold', fontSize: size || 14}}>
-          {masquerade ?? name}
-        </Text>
+        {typeof roleColor == 'string' ? (
+          <Text colour={roleColor} style={{fontWeight: 'bold', fontSize: size}}>
+            {displayName}
+          </Text>
+        ) : (
+          <MaskedView
+            maskElement={
+              <View style={{backgroundColor: 'transparent'}}>
+                <Text style={{fontSize: size, fontWeight: 'bold'}}>
+                  {displayName}
+                </Text>
+              </View>
+            }
+          >
+            <LinearGradient
+              {...roleColor}
+              style={{
+                flex: 1,
+                minWidth: (size - 6) * displayName.length,
+                height: size,
+              }}
+            />
+          </MaskedView>
+        )}
         {!noBadge ? (
           <>
             {bridgedMessage ? (
