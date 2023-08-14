@@ -95,7 +95,9 @@ class MainView extends React.Component {
       console.log(`[APP] Connected to instance (${new Date().getTime()})`);
     });
     client.on('ready', async () => {
-      let orderedServers = (server = channel = null);
+      let orderedServers,
+        server,
+        channel = null;
       try {
         const rawSettings = await client.syncFetchSettings([
           'ordering',
@@ -140,6 +142,7 @@ class MainView extends React.Component {
     });
     client.on('message', async msg => {
       console.log(`[APP] Handling message ${msg._id}`);
+
       let channelNotif = this.state.channelNotifications[msg.channel?._id];
       let serverNotif =
         this.state.serverNotifications[msg.channel?.server?._id];
@@ -323,15 +326,13 @@ class MainView extends React.Component {
                 />
               }
               style={styles.app}
-              bounceBackOnOverdraw={false}
-            >
+              bounceBackOnOverdraw={false}>
               <ChannelView state={this} channel={this.state.currentChannel} />
             </SideMenu>
             <Modals state={this.state} setState={this.setState.bind(this)} />
             <NetworkIndicator client={client} />
             <View
-              style={{position: 'absolute', top: 20, left: 0, width: '100%'}}
-            >
+              style={{position: 'absolute', top: 20, left: 0, width: '100%'}}>
               <Notification
                 message={this.state.notificationMessage}
                 setState={() =>
@@ -354,11 +355,9 @@ class MainView extends React.Component {
                     marginLeft: '90%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                  }}
-                >
+                  }}>
                   <TouchableOpacity
-                    onPress={() => this.setState({status: 'loginSettings'})}
-                  >
+                    onPress={() => this.setState({status: 'loginSettings'})}>
                     <MaterialIcon
                       name="more-vert"
                       size={30}
@@ -371,15 +370,13 @@ class MainView extends React.Component {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flex: 1,
-                  }}
-                >
+                  }}>
                   <Text
                     style={{
                       fontFamily: 'Inter',
                       fontWeight: 'bold',
                       fontSize: 48,
-                    }}
-                  >
+                    }}>
                     RVMob
                   </Text>
                   {this.state.loginWithEmail === true ? (
@@ -531,8 +528,7 @@ class MainView extends React.Component {
                               status: 'awaitingLogin',
                             });
                           }
-                        }}
-                      >
+                        }}>
                         <Text useInter={true}>Log in</Text>
                       </Button>
                       {this.state.logInError ? (
@@ -544,8 +540,7 @@ class MainView extends React.Component {
                       <Button
                         onPress={() => {
                           this.setState({loginWithEmail: false});
-                        }}
-                      >
+                        }}>
                         <Text useInter={true}>Log in with token</Text>
                       </Button>
                     </>
@@ -603,8 +598,7 @@ class MainView extends React.Component {
                               });
                             }
                           }
-                        }}
-                      >
+                        }}>
                         <Text useInter={true}>Log in</Text>
                       </Button>
                       {this.state.logInError ? (
@@ -616,8 +610,7 @@ class MainView extends React.Component {
                       <Button
                         onPress={() => {
                           this.setState({loginWithEmail: true});
-                        }}
-                      >
+                        }}>
                         <Text useInter={true}>Log in with email</Text>
                       </Button>
                     </>
@@ -668,8 +661,7 @@ function ErrorMessage({
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-        }}
-      >
+        }}>
         <Text style={{fontSize: 30, fontWeight: 'bold'}}>
           OOPSIE WOOPSIE!! {'UwU\n'}
         </Text>
@@ -682,8 +674,7 @@ function ErrorMessage({
       <Button
         onPress={() => {
           resetErrorBoundary();
-        }}
-      >
+        }}>
         <Text>Reload app</Text>
       </Button>
     </>

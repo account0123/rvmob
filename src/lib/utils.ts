@@ -4,8 +4,8 @@ import {differenceInMinutes} from 'date-fns';
 import {Channel, Message} from 'revolt.js';
 import {decodeTime} from 'ulid';
 
-import {client, app} from '../Generic';
-import {currentTheme, styles} from '../Theme';
+import {client} from '../Generic';
+import {currentTheme} from '../Theme';
 import {DEFAULT_MESSAGE_LOAD_COUNT} from './consts';
 
 /**
@@ -32,99 +32,34 @@ export function getColour(c: string) {
   }
 
   // ...then check for gradients
-  const linearGradientRegex = /linear-gradient\s*\(/;
-  const gradientRegex = /(conic|radial|linear)-gradient\s*\(/;
+  const gradientRegex = /(linear|conical|radial)-gradient\s*\(/;
   const degRegex = /[0-9]{0,3}deg,\s*/;
   const bracketRegex = /\)\s*(text)?$/;
   const percentRegex = /[0-9]{0,3}%(,|\))?\s*/;
 
   const isGradient = c.match(gradientRegex);
   if (isGradient) {
-    const isLinear = linearGradientRegex.test(c);
-    const filteredC = c.replace(gradientRegex, '').replace(bracketRegex, '');
+    const filteredC = c
+      .replace(gradientRegex, '')
+      .replace(bracketRegex, '')
+      .replace(degRegex, '')
+      .replace(percentRegex, '');
+
     const filteredAsArray = filteredC.split(',');
 
     console.log(
       `[UTILS] getColour detected a gradient role: ${c}, filtered: ${filteredC}, to array: ${filteredAsArray}, ${filteredAsArray[0]}`,
     );
 
-    let first = filteredAsArray[0].trim().split(' ')[0];
-    return isLinear
-      ? getLinearGradient(filteredAsArray)
-      : /in |from |at |to /.test(first)
-      ? filteredAsArray[1].trim().split(' ')[0]
-      : first;
+    if (c.match('linear')) {
+      return filteredAsArray[0];
+    }
+
+    return c;
   }
+
   // at this point, c is probably just a regular HEX code so return it directly
   return c;
-}
-/*FIXME: I dont know how to explain this
- * linear-gradient(20deg, #FF424F, rgb(173,20,87)), filtered: 20deg, #FF424F, rgb(173,20,87), to array: 20deg, #FF424F, rgb(173,20,87)
- roleColor={"useAngle":true,"angle":20,"angleCenter":{"x":0.5,"y":0.5},"colors":["#FF424F","rgb(173","20","87)"],"locations":[0,0.25,0.5,0.75]}
-
- */
-function getLinearGradient(s) {
-  const degRegex = /([0-9]{0,3})deg\s*/,
-    radRegex = /([0-9.]+)rad\s*/,
-    gradRegex = /([0-9]{0,3})rad\s*/,
-    turnRegex = /([0-9.]+)turn\s*/,
-    angleCenter = {x: 0.5, y: 0.5},
-    percentRegex = /([0-9]{0,3})%\s*/;
-  const fromRad = r => r * (180 / Math.PI);
-  const fromGrad = g => g * (180 / 200);
-  const fromTurn = t => t * 360;
-  const toN = n => (isNaN(+n) ? 0 : +n);
-  let useAngle = !1,
-    angle = 0,
-    start = {x: 0, y: 0},
-    end = {x: 0, y: 0};
-  const colors: string[] = [],
-    locations: number[] = [];
-  const it = s[Symbol.iterator]();
-  const first = it.next().value;
-  if (first.startsWith('to')) {
-    let directions;
-    (directions = first.split(' ')), directions.shift();
-    (directions.includes('bottom') && (end.y = 1)) ||
-      (directions.includes('top') && (start.y = 1));
-    (directions.includes('right') && (end.x = 1)) ||
-      (directions.includes('left') && (start.x = 1));
-  } else end.x = 1;
-  let e = degRegex.exec(first);
-  console.log('[UTILS] e=', e);
-  (Array.isArray(e) &&
-    e.length > 1 &&
-    (angle = toN(e[1])) &&
-    (useAngle = true)) ||
-    (((e = radRegex.exec(first)), Array.isArray(e)) &&
-      e.length > 1 &&
-      ((angle = fromRad(toN(e[1]))), (useAngle = true))) ||
-    (((e = gradRegex.exec(first)), Array.isArray(e)) &&
-      e.length > 1 &&
-      ((angle = fromGrad(toN(e[1]))), (useAngle = true))) ||
-    (((e = turnRegex.exec(first)), Array.isArray(e)) &&
-      e.length > 1 &&
-      ((angle = fromTurn(toN(e[1]))), (useAngle = true))) ||
-    (colors.push(first) && locations.push(0));
-
-  for (const slice of it) {
-    if (slice.startsWith('rgb('))
-      colors.push([slice, it.next().value, it.next().value].join(','));
-    else {
-      const [$c, $s] = slice.trim().split(' ');
-      colors.push($c);
-      const p = percentRegex.exec($s);
-      (Array.isArray(p) && p.length > 1 && locations.push(+p[1] / 100)) ||
-        locations.push(NaN);
-    }
-  }
-  if (!app.settings.get('ui.messaging.roleGradients')) {
-    return colors.length > 0 ? colors[0] : styles.textDefault.color;
-  }
-  for (let i = 0; i < locations.length; i++)
-    if (isNaN(locations[i])) locations[i] = i / locations.length;
-  if (useAngle) return {useAngle, angle, angleCenter, colors, locations};
-  else return {start, end, colors, locations};
 }
 
 /**

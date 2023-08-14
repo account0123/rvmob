@@ -238,14 +238,6 @@ export const app = {
         type: 'boolean',
       },
       {
-        key: 'ui.messaging.roleGradients',
-        category: 'appearance',
-        name: 'Linear gradient in roles',
-        default: false,
-        type: 'boolean',
-        experimental: true
-      },
-      {
         key: 'ui.settings.showExperimental',
         category: 'functionality',
         name: 'Show experimental features',
