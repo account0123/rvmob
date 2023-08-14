@@ -341,13 +341,8 @@ export class Messages extends React.Component {
             }
           }}
           onLayout={() => {
-            if (this.state.bottomOfPage) {
+            if (!this.state.bottomOfPage) {
               this.scrollView.scrollToEnd({animated: false});
-            }
-          }}
-          onContentSizeChange={() => {
-            if (this.state.bottomOfPage) {
-              this.scrollView.scrollToEnd({animated: true});
             }
           }}>
           {this.state.messages.map(m => m.rendered)}
