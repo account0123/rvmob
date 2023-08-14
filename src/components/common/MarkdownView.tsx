@@ -14,6 +14,7 @@ import {Text} from './atoms';
 import {SvgEmoji, CustomEmoji, emojiPlugin} from './messaging/Emoji';
 import {RevoltEmojiDictionary} from 'revkit';
 
+
 const defaultMarkdownIt = MarkdownIt({typographer: true, linkify: true})
   .disable(['image'])
   .use(spoilerPlugin)
@@ -67,7 +68,7 @@ const spoilerRule = {
 
     return (
       <Text key={node.key} style={{...inheritedStyles, ...styles.text}}>
-        {node.content}
+        {renderEmojis(node.content)}
       </Text>
     );
   },
